@@ -5,13 +5,14 @@ A C++ CLI "OS emulator" featuring a command interpreter (input) and an animated 
 
 ## Build and run
 
-CMake and a C++ compiler (ex. g++) is required.
+CMake 3.16+ and a C++ compiler with support for C++17 (ex. g++) is required.
 
 Initialise once:
 
 ```powershell
 cmake -S . -B build -G "MinGW Makefiles"
 ```
+Use MinGW for Windows, otherwise you may omit
 
 Build and run:
 
