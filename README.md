@@ -1,1 +1,23 @@
-# CSOPESY-MO3
+# Marquee Console
+> Authors: CHIU, Kristopher Lance, KE, Xan Luo, RAMIREZ, Diana Angela, YAMSUAN, Rhian Claire
+
+A C++ CLI "OS emulator" featuring a command interpreter (input) and an animated text marquee (output).
+
+## Build and run
+
+CMake and a C++ compiler (ex. g++) is required.
+
+Initialise once:
+
+```powershell
+cmake -S . -B build -G "MinGW Makefiles"
+```
+
+Build and run:
+
+```powershell
+cmake --build build
+.\marquee.exe
+```
+
+For contributing: Please make sure to add any additional `.cpp` files to `add_executables` in `CMakeLists.txt`. The build command stays the same regardless.
