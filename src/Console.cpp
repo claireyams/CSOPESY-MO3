@@ -20,7 +20,7 @@ void Console::printWelcome() const {
               << "     Welcome to CSOPESY!\n"
               << "==============================\n"
               << "Group developers:\nCHIU, Kristopher Lance,\nKE, Xan Luo,\nRAMIREZ, Diana Angela,\nYAMSUAN, Rhian Claire\n"
-              << "Version date: 2026-09-15\n\n"
+              << "Version date: 2026-09-21\n\n"
               << "Type help to see the available commands.\n\n";
 }
 
@@ -28,7 +28,7 @@ void Console::printHelp() const {
     std::cout << "help                 Show available commands\n"
               << "start_marquee        Start the marquee animation (TODO)\n"
               << "stop_marquee         Stop the marquee animation (TODO)\n"
-              << "set_text <text>      Set the marquee text (TODO)\n"
+              << "set_text <text>      Set the marquee text\n"
               << "set_speed <ms>       Set the animation refresh interval in milliseconds (TODO)\n"
               << "exit                 Terminate the console\n";
 }
@@ -37,23 +37,56 @@ bool Console::handleCommand(const std::string& line) {
     std::istringstream input(line);
     std::string command;
     input >> command;
+    std::string args;
+    std::getline(input, args);
+    if (!args.empty()) {
+        args.erase(0, 1); // removes the separator after the command
+    }
 
     if (command == "help") {
-        printHelp();
+        return handleHelp(args);
     } else if (command == "start_marquee") {
-        // TODO
+        return handleStartMarquee(args);
     } else if (command == "stop_marquee") {
-        // TODO
+        return handleStopMarquee(args);
     } else if (command == "set_text") {
-        // TODO
+        return handleSetText(args);
     } else if (command == "set_speed") {
-        // TODO
+        return handleSetSpeed(args);
     } else if (command == "exit") {
         std::cout << "Goodbye!\n";
         return false;
-    } else if (!command.empty()) {
-        std::cout << "Unknown command. Type help.\n";
     }
 
+    std::cout << "Unknown command. Type help.\n";
+    return true;
+}
+
+bool Console::handleHelp(const std::string&) {
+    printHelp();
+    return true;
+}
+
+bool Console::handleStartMarquee(const std::string&) {
+    // TODO: Start the marquee animation.
+    std::cout << "start_marquee is not implemented yet.\n";
+    return true;
+}
+
+bool Console::handleStopMarquee(const std::string&) {
+    // TODO: Stop the marquee animation.
+    std::cout << "stop_marquee is not implemented yet.\n";
+    return true;
+}
+
+bool Console::handleSetText(const std::string& args) {
+    // TODO: Set the marquee text.
+    std::cout << "set_text is not implemented yet.\n";
+    return true;
+}
+
+bool Console::handleSetSpeed(const std::string&) {
+    // TODO: Set the animation refresh interval.
+    std::cout << "set_speed is not implemented yet.\n";
     return true;
 }
