@@ -1,19 +1,7 @@
 #include "Console.h"
-
 #include <iostream>
 #include <sstream>
-
-void Console::run() {
-    printWelcome();
-
-    // TODO: Replace blocking getline with input polling in the future when animation is implemented.
-    std::string line;
-    while (std::cout << "Command> " && std::getline(std::cin, line)) {
-        if (!handleCommand(line)) {
-            break;
-        }
-    }
-}
+#include <thread>
 
 void Console::printWelcome() const {
     std::cout << "==============================\n"
@@ -26,11 +14,38 @@ void Console::printWelcome() const {
 
 void Console::printHelp() const {
     std::cout << "help                 Show available commands\n"
-              << "start_marquee        Start the marquee animation (TODO)\n"
-              << "stop_marquee         Stop the marquee animation (TODO)\n"
-              << "set_text <text>      Set the marquee text (TODO)\n"
-              << "set_speed <ms>       Set the animation refresh interval in milliseconds (TODO)\n"
-              << "exit                 Terminate the console\n";
+              << "start_marquee        Start the marquee animation\n"
+              << "stop_marquee         Stop the marquee animation\n"
+              << "set_text             Set the marquee text\n"
+              << "set_speed            Set the animation refresh interval\n"
+              << "exit                 Terminate the console\n\n";
+}
+
+void Console::run() {
+    printWelcome();
+    marquee = std::make_unique<Marquee>();
+    
+    std::thread animThread(&Console::animationLoop, this);
+    
+    std::string line;
+    while (true) {
+        std::cout << "Command>> ";
+        if (!std::getline(std::cin, line)) break;
+        if (!handleCommand(line)) break;
+    }
+    
+    running = false;
+    animThread.join();
+}
+
+void Console::animationLoop() {
+    while (running) {
+        if (marquee->isActive()) {
+            marquee->update();
+            marquee->render();
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(refreshMs));
+    }
 }
 
 bool Console::handleCommand(const std::string& line) {
@@ -41,19 +56,38 @@ bool Console::handleCommand(const std::string& line) {
     if (command == "help") {
         printHelp();
     } else if (command == "start_marquee") {
-        // TODO
+        marquee->start();
+        std::cout << "Marquee started.\n";
     } else if (command == "stop_marquee") {
-        // TODO
+        marquee->stop();
+        std::cout << "Marquee stopped.\n";
     } else if (command == "set_text") {
-        // TODO
+        std::string text;
+        std::cout << "Enter text: ";
+        std::getline(std::cin, text);
+        if (!text.empty()) {
+            marquee->setText(text);
+            std::cout << "Text set to: " << text << "\n";
+        } else {
+            std::cout << "No text provided.\n";
+        }
     } else if (command == "set_speed") {
-        // TODO
+        int ms;
+        std::cout << "Enter speed (ms): ";
+        std::cin >> ms;
+        std::cin.ignore();
+        if (ms > 0) {
+            marquee->setSpeed(ms);
+            refreshMs = ms;
+            std::cout << "Speed set to " << ms << "ms.\n";
+        } else {
+            std::cout << "Error: Speed must be positive.\n";
+        }
     } else if (command == "exit") {
         std::cout << "Goodbye!\n";
         return false;
     } else if (!command.empty()) {
         std::cout << "Unknown command. Type help.\n";
     }
-
     return true;
 }

@@ -4,6 +4,7 @@ project(MarqueeConsole LANGUAGES CXX)
 add_executable(marquee
     src/main.cpp
     src/Console.cpp
+    src/Marquee.cpp
 )
 target_include_directories(marquee PRIVATE include)
 target_compile_features(marquee PRIVATE cxx_std_17)
