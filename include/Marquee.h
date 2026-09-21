@@ -12,19 +12,21 @@ struct Obstacle {
 class Marquee {
 private:
     std::string text;
-    int x, y;
-    int vx, vy;
+    int y;
+    int vy;
     int speed;
     bool isRunning;
     mutable std::mutex mtx;   // update/render run on the animation thread, start/stop/setText on the input thread
-    
+
     std::vector<Obstacle> obstacles;
-    
-    const int GRAVITY = 1;
+    std::vector<int> trailY;
+    long long frameNumber;
+    int nextGapVariant;
+
     const int SCREEN_WIDTH = 80;
     const int SCREEN_HEIGHT = 24;
     const int OBSTACLE_WIDTH = 3;
-    
+
 public:
     Marquee();
     void setText(const std::string& newText);
@@ -38,4 +40,6 @@ public:
     
 private:
     void generateObstacles();
+    void resetTrail();
+    int snakeHeadX() const;
 };
