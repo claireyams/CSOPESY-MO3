@@ -102,7 +102,7 @@ void Console::printWelcome() const {
               << "     Welcome to CSOPESY!\n"
               << "==============================\n"
               << "Group developers:\nCHIU, Kristopher Lance,\nKE, Xan Luo,\nRAMIREZ, Diana Angela,\nYAMSUAN, Rhian Claire\n"
-              << "Version date: 2026-09-15\n\n"
+              << "Version date: 2026-09-21\n\n"
               << "Type help to see the available commands.\n\n";
 }
 
