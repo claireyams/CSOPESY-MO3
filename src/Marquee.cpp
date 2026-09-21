@@ -5,14 +5,27 @@
 
 namespace {
 void drawText(std::vector<std::string>& canvas, int row, int col,
-              const std::string& value) {
+              const std::string& value,
+              std::vector<std::string>& colors, char color) {
     if (row < 0 || row >= static_cast<int>(canvas.size())) return;
 
     for (int i = 0; i < static_cast<int>(value.length()); ++i) {
         const int x = col + i;
         if (x >= 0 && x < static_cast<int>(canvas[row].length())) {
             canvas[row][x] = value[i];
+            colors[row][x] = color;
         }
+    }
+}
+
+const char* colorCode(char color) {
+    switch (color) {
+        case 'B': return "\033[96m"; // border: bright cyan
+        case 'C': return "\033[97m"; // clouds: bright white
+        case 'G': return "\033[33m"; // ground: yellow/brown
+        case 'P': return "\033[92m"; // pipes: bright green
+        case 'S': return "\033[93m"; // snake: bright yellow
+        default:  return "\033[0m";
     }
 }
 }
@@ -95,6 +108,9 @@ void Marquee::render() const {
     std::vector<std::string> canvas(
         SCREEN_HEIGHT, std::string(SCREEN_WIDTH, ' ')
     );
+    std::vector<std::string> colors(
+        SCREEN_HEIGHT, std::string(SCREEN_WIDTH, ' ')
+    );
 
     // far clouds move slowly.
     const int cloudOffset = static_cast<int>((frameNumber / 4) % SCREEN_WIDTH);
@@ -102,15 +118,16 @@ void Marquee::render() const {
     const int cloudRows[] = {3, 8, 5};
     for (int i = 0; i < 3; ++i) {
         int cloudX = (cloudPositions[i] - cloudOffset + SCREEN_WIDTH) % SCREEN_WIDTH;
-        drawText(canvas, cloudRows[i], cloudX,     "    .--.    ");
-        drawText(canvas, cloudRows[i] + 1, cloudX, " .-(    ).  ");
-        drawText(canvas, cloudRows[i] + 2, cloudX, "(___.__)__) ");
+        drawText(canvas, cloudRows[i], cloudX,     "    .--.    ", colors, 'C');
+        drawText(canvas, cloudRows[i] + 1, cloudX, " .-(    ).  ", colors, 'C');
+        drawText(canvas, cloudRows[i] + 2, cloudX, "(___.__)__) ", colors, 'C');
     }
 
     // the ground is the nearest background layer and moves every frame
     const int groundOffset = static_cast<int>(frameNumber % 4);
     for (int col = 0; col < SCREEN_WIDTH; ++col) {
         canvas[SCREEN_HEIGHT - 2][col] = "_.._"[(col + groundOffset) % 4];
+        colors[SCREEN_HEIGHT - 2][col] = 'G';
     }
 
     // draw moving pipes over the background
@@ -119,7 +136,10 @@ void Marquee::render() const {
             if (row >= obs.gapY && row < obs.gapY + obs.gapHeight) continue;
             for (int width = 0; width < OBSTACLE_WIDTH; ++width) {
                 const int col = obs.x + width;
-                if (col >= 0 && col < SCREEN_WIDTH) canvas[row][col] = '#';
+                if (col >= 0 && col < SCREEN_WIDTH) {
+                    canvas[row][col] = '#';
+                    colors[row][col] = 'P';
+                }
             }
         }
     }
@@ -134,12 +154,15 @@ void Marquee::render() const {
             : y;
         if (row > 0 && row < SCREEN_HEIGHT - 2 && col >= 0 && col < SCREEN_WIDTH) {
             canvas[row][col] = text[i];
+            colors[row][col] = 'S';
         }
     }
 
     for (int col = 0; col < SCREEN_WIDTH; ++col) {
         canvas.front()[col] = '=';
         canvas.back()[col] = '=';
+        colors.front()[col] = 'B';
+        colors.back()[col] = 'B';
     }
 
     // Build the whole frame first and write it in one go (no flicker).
@@ -150,7 +173,16 @@ void Marquee::render() const {
     frame << "\033[?25l" << "\033" "7" << "\033[H";
     
     for (int row = 0; row < SCREEN_HEIGHT; ++row) {
-        frame << "\033[" << row + 1 << ";1H" << canvas[row];
+        frame << "\033[" << row + 1 << ";1H";
+        char activeColor = '\0';
+        for (int col = 0; col < SCREEN_WIDTH; ++col) {
+            if (colors[row][col] != activeColor) {
+                activeColor = colors[row][col];
+                frame << colorCode(activeColor);
+            }
+            frame << canvas[row][col];
+        }
+        frame << "\033[0m";
     }
 
     frame << "\033" "8" << "\033[?25h";   // restore cursor
