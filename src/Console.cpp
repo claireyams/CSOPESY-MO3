@@ -107,9 +107,12 @@ void Console::printWelcome() const {
 }
 
 void Console::printHelp() const {
-    std::cout << "help          Show commands             start_marquee Start animation\n"
-              << "stop_marquee  Stop animation            set_text      Set marquee text\n"
-              << "set_speed     Set refresh (ms)          exit          Terminate console\n";
+    std::cout << "help          Show commands\n"
+              << "start_marquee Start animation\n"
+              << "stop_marquee  Stop animation\n"
+              << "set_text      Set marquee text\n"
+              << "set_speed     Set refresh (ms)\n"
+              << "exit          Terminate console\n";
 }
 
 void Console::run() {
