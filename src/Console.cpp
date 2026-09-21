@@ -19,6 +19,7 @@ void Console::printWelcome() const {
     std::cout << "==============================\n"
               << "     Welcome to CSOPESY!\n"
               << "==============================\n"
+              << "Marquee Console Exercise\n"
               << "Group developers:\nCHIU, Kristopher Lance,\nKE, Xan Luo,\nRAMIREZ, Diana Angela,\nYAMSUAN, Rhian Claire\n"
               << "Version date: 2026-09-21\n\n"
               << "Type help to see the available commands.\n\n";
@@ -26,10 +27,7 @@ void Console::printWelcome() const {
 
 void Console::printHelp() const {
     std::cout << "help                 Show available commands\n"
-              << "start_marquee        Start the marquee animation (TODO)\n"
-              << "stop_marquee         Stop the marquee animation (TODO)\n"
               << "set_text <text>      Set the marquee text\n"
-              << "set_speed <ms>       Set the animation refresh interval in milliseconds (TODO)\n"
               << "exit                 Terminate the console\n";
 }
 
@@ -45,14 +43,8 @@ bool Console::handleCommand(const std::string& line) {
 
     if (command == "help") {
         return handleHelp(args);
-    } else if (command == "start_marquee") {
-        return handleStartMarquee(args);
-    } else if (command == "stop_marquee") {
-        return handleStopMarquee(args);
     } else if (command == "set_text") {
         return handleSetText(args);
-    } else if (command == "set_speed") {
-        return handleSetSpeed(args);
     } else if (command == "exit") {
         std::cout << "Goodbye!\n";
         return false;
@@ -67,18 +59,6 @@ bool Console::handleHelp(const std::string&) {
     return true;
 }
 
-bool Console::handleStartMarquee(const std::string&) {
-    // TODO: Start the marquee animation.
-    std::cout << "start_marquee is not implemented yet.\n";
-    return true;
-}
-
-bool Console::handleStopMarquee(const std::string&) {
-    // TODO: Stop the marquee animation.
-    std::cout << "stop_marquee is not implemented yet.\n";
-    return true;
-}
-
 bool Console::handleSetText(const std::string& args) {
     if (args.find_first_not_of(" \t") == std::string::npos) {
         std::cout << "Please provide text after set_text.\n";
@@ -86,11 +66,5 @@ bool Console::handleSetText(const std::string& args) {
         marqueeText_ = args;
         std::cout << "Marquee text set to: " << marqueeText_ << '\n';
     }
-    return true;
-}
-
-bool Console::handleSetSpeed(const std::string&) {
-    // TODO: Set the animation refresh interval.
-    std::cout << "set_speed is not implemented yet.\n";
     return true;
 }
