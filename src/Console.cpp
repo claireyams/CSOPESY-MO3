@@ -124,7 +124,7 @@ void Console::run() {
     std::string line;
     while (true) {
         moveToPrompt();
-        std::cout << "Command>> ";
+        std::cout << "Command> ";
         if (!std::getline(std::cin, line)) break;
         moveToOutput();
         if (!handleCommand(line)) break;
