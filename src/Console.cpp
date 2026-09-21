@@ -80,8 +80,12 @@ bool Console::handleStopMarquee(const std::string&) {
 }
 
 bool Console::handleSetText(const std::string& args) {
-    // TODO: Set the marquee text.
-    std::cout << "set_text is not implemented yet.\n";
+    if (args.find_first_not_of(" \t") == std::string::npos) {
+        std::cout << "Please provide text after set_text.\n";
+    } else {
+        marqueeText_ = args;
+        std::cout << "Marquee text set to: " << marqueeText_ << '\n';
+    }
     return true;
 }
 
