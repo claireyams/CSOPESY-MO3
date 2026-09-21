@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <mutex>
 
 struct Obstacle {
     int x;
@@ -15,6 +16,7 @@ private:
     int vx, vy;
     int speed;
     bool isRunning;
+    mutable std::mutex mtx;   // update/render run on the animation thread, start/stop/setText on the input thread
     
     std::vector<Obstacle> obstacles;
     
@@ -31,7 +33,8 @@ public:
     void stop();
     void update();
     void render() const;
-    bool isActive() const { return isRunning; }
+    bool isActive() const { std::lock_guard<std::mutex> lock(mtx); return isRunning; }
+    int height() const { return SCREEN_HEIGHT; }
     
 private:
     void generateObstacles();

@@ -1,5 +1,6 @@
 #include "Marquee.h"
 #include <iostream>
+#include <sstream>
 #include <cmath>
 
 Marquee::Marquee() : text("CSOPESY"), x(10), y(10), vx(1), vy(0), 
@@ -19,6 +20,7 @@ void Marquee::generateObstacles() {
 }
 
 void Marquee::update() {
+    std::lock_guard<std::mutex> lock(mtx);
     if (!isRunning) return;
     
     x += vx;
@@ -54,12 +56,20 @@ void Marquee::update() {
 }
 
 void Marquee::render() const {
-    std::cout << "\033[2J\033[H";
+    std::lock_guard<std::mutex> lock(mtx);
+    if (!isRunning) return;
+
+    // Build the whole frame first and write it in one go (no flicker).
+    std::ostringstream frame;
+
+    // Hide cursor, save where it is (the command prompt), and draw from the top-left
+    // without clearing the screen. The cursor is put back at the end.
+    frame << "\033[?25l" << "\033" "7" << "\033[H";
     
-    for (int i = 0; i < SCREEN_WIDTH; i++) std::cout << "=";
-    std::cout << "\n";
+    for (int i = 0; i < SCREEN_WIDTH; i++) frame << "=";
     
     for (int row = 1; row < SCREEN_HEIGHT - 1; row++) {
+        frame << "\033[" << row + 1 << ";1H";   // jump to the row (instead of "\n")
         for (int col = 0; col < SCREEN_WIDTH; col++) {
             char cell = ' ';
             
@@ -78,23 +88,29 @@ void Marquee::render() const {
                 }
             }
             
-            std::cout << cell;
+            frame << cell;
         }
-        std::cout << "\n";
     }
     
-    for (int i = 0; i < SCREEN_WIDTH; i++) std::cout << "=";
+    frame << "\033[" << SCREEN_HEIGHT << ";1H";
+    for (int i = 0; i < SCREEN_WIDTH; i++) frame << "=";
+
+    frame << "\033" "8" << "\033[?25h";   // restore cursor
+    std::cout << frame.str() << std::flush;
 }
 
 void Marquee::setText(const std::string& newText) {
+    std::lock_guard<std::mutex> lock(mtx);
     text = newText;
 }
 
 void Marquee::setSpeed(int ms) {
+    std::lock_guard<std::mutex> lock(mtx);
     speed = ms;
 }
 
 void Marquee::start() {
+    std::lock_guard<std::mutex> lock(mtx);
     isRunning = true;
     x = 10;
     y = 10;
@@ -103,5 +119,6 @@ void Marquee::start() {
 }
 
 void Marquee::stop() {
+    std::lock_guard<std::mutex> lock(mtx);
     isRunning = false;
 }
