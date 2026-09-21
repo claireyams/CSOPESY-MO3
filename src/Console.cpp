@@ -131,6 +131,7 @@ void Console::run() {
     }
     
     running = false;
+    animationWake.notify_one();
     animThread.join();
     std::cout << at(termRows) << "\n";   // leave the shell prompt below our screen
 }
@@ -142,7 +143,14 @@ void Console::animationLoop() {
             marquee->update();
             marquee->render();
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(refreshMs.load()));
+        
+        // Wait for the next refresh interval or until exit prompt.
+        std::unique_lock<std::mutex> lock(animationWaitMutex);
+        animationWake.wait_for(
+            lock,
+            std::chrono::milliseconds(refreshMs.load()),
+            [this] { return !running.load(); }
+        );
     }
 }
 

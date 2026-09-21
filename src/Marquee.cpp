@@ -26,8 +26,9 @@ void Marquee::update() {
     x += vx;
     
     // Autopilot: find next obstacle and navigate through its gap
+    const int textWidth = static_cast<int>(text.length());
     for (const auto& obs : obstacles) {
-        if (x + 10 >= obs.x && x < obs.x + OBSTACLE_WIDTH) {
+        if (x + textWidth >= obs.x && x < obs.x + OBSTACLE_WIDTH) {
             // text is at this obstacle - aim for center of gap
             int gapCenter = obs.gapY + obs.gapHeight / 2;
             
