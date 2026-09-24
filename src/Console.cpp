@@ -1,7 +1,7 @@
 #include "Console.h"
 #include <algorithm>
+#include <charconv>
 #include <iostream>
-#include <limits>
 #include <sstream>
 #include <thread>
 
@@ -110,8 +110,8 @@ void Console::printHelp() const {
     std::cout << "help          Show commands\n"
               << "start_marquee Start animation\n"
               << "stop_marquee  Stop animation\n"
-              << "set_text      Set marquee text\n"
-              << "set_speed     Set refresh (ms)\n"
+              << "set_text <text>      Set marquee text\n"
+              << "set_speed <ms>       Set refresh (ms)\n"
               << "exit          Terminate console\n";
 }
 
@@ -173,29 +173,33 @@ bool Console::handleCommand(const std::string& line) {
         std::cout << "Marquee stopped.\n";
     } else if (command == "set_text") {
         std::string text;
-        moveToPrompt();
-        std::cout << "Enter text: ";
-        std::getline(std::cin, text);
-        moveToOutput();
+        std::getline(input, text);
+        text.erase(0, text.find_first_not_of(" \t"));
         if (!text.empty()) {
             marquee->setText(text);
             std::cout << "Text set to: " << text << "\n";
         } else {
-            std::cout << "No text provided.\n";
+            std::cout << "Usage: set_text <text>\n";
         }
     } else if (command == "set_speed") {
+        std::string argument;
+        std::getline(input, argument);
+        const auto first = argument.find_first_not_of(" \t");
+        const auto last = argument.find_last_not_of(" \t");
         int ms = 0;
-        moveToPrompt();
-        std::cout << "Enter speed (ms): ";
-        if (!(std::cin >> ms)) { std::cin.clear(); ms = 0; }   // not a number
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        moveToOutput();
-        if (ms > 0) {
+        bool valid = false;
+        if (first != std::string::npos) {
+            const char* begin = argument.data() + first;
+            const char* end = argument.data() + last + 1;
+            const auto result = std::from_chars(begin, end, ms);
+            valid = result.ec == std::errc{} && result.ptr == end && ms > 0;
+        }
+        if (valid) {
             marquee->setSpeed(ms);
             refreshMs = ms;
             std::cout << "Speed set to " << ms << "ms.\n";
         } else {
-            std::cout << "Error: Speed must be positive.\n";
+            std::cout << "Usage: set_speed <positive ms>\n";
         }
     } else if (command == "exit") {
         std::cout << "Goodbye!\n";
