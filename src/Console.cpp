@@ -19,8 +19,8 @@
 #endif
 
 namespace {
-// marquee (24 rows) + 3 output rows + prompt row + 1 spare row
-constexpr int MIN_ROWS = 29;
+// marquee (24 rows) + 6 output rows + 1 prompt row + 1 spare row
+constexpr int MIN_ROWS = 32;
 
 // ANSI: move the cursor to a row (1-based)
 std::string at(int row) { return "\033[" + std::to_string(row) + ";1H"; }
@@ -71,7 +71,7 @@ void Console::checkResize() {
     std::cout << "\033[2J\033[H";
     if (!marquee->isActive()) printWelcome();
     moveToPrompt();
-    std::cout << "Command>> " << std::flush;
+    std::cout << "Command> " << std::flush;
 }
 
 // Put the cursor on the (cleared) prompt row at the bottom.
