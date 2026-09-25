@@ -141,18 +141,26 @@ void Console::run() {
 
 void Console::animationLoop() {
     while (running) {
+        std::uint64_t observedRevision;
+        {
+            std::lock_guard<std::mutex> lock(animationWaitMutex);
+            observedRevision = animationRevision;
+        }
+
         checkResize();
         if (marquee->isActive()) {
             marquee->update();
             marquee->render();
         }
         
-        // Wait for the next refresh interval or until exit prompt.
+        // Wake early when start or speed changes, even if the old interval is long.
         std::unique_lock<std::mutex> lock(animationWaitMutex);
         animationWake.wait_for(
             lock,
             std::chrono::milliseconds(refreshMs.load()),
-            [this] { return !running.load(); }
+            [this, observedRevision] {
+                return !running.load() || animationRevision != observedRevision;
+            }
         );
     }
 }
@@ -166,6 +174,11 @@ bool Console::handleCommand(const std::string& line) {
         printHelp();
     } else if (command == "start_marquee") {
         marquee->start();
+        {
+            std::lock_guard<std::mutex> lock(animationWaitMutex);
+            ++animationRevision;
+        }
+        animationWake.notify_one();
         std::cout << "Marquee started.\n";
     } else if (command == "stop_marquee") {
         marquee->stop();
@@ -196,7 +209,12 @@ bool Console::handleCommand(const std::string& line) {
         }
         if (valid) {
             marquee->setSpeed(ms);
-            refreshMs = ms;
+            {
+                std::lock_guard<std::mutex> lock(animationWaitMutex);
+                refreshMs = ms;
+                ++animationRevision;
+            }
+            animationWake.notify_one();
             std::cout << "Speed set to " << ms << "ms.\n";
         } else {
             std::cout << "Usage: set_speed <positive ms>\n";

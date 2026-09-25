@@ -1,6 +1,7 @@
 #pragma once
 #include <atomic>
 #include <condition_variable>
+#include <cstdint>
 #include <string>
 #include <memory>
 #include <chrono>
@@ -32,6 +33,7 @@ private:
     std::atomic<int> refreshMs{100};
     std::condition_variable animationWake;
     std::mutex animationWaitMutex;
+    std::uint64_t animationRevision{0};
 
     std::atomic<int> realRows{30}, realCols{120};   // actual terminal size
     std::atomic<int> termRows{30};                  // rows used for the layout
