@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug marquee",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/marquee.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "CMake Build",
+      "MIMode": "gdb",
+      "externalConsole": true
+    }
+  ]
+}
