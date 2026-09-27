@@ -21,6 +21,7 @@
 namespace {
 // marquee (24 rows) + 6 output rows + 1 prompt row + 1 spare row
 constexpr int MIN_ROWS = 32;
+constexpr int RESIZE_POLL_MS = 100;
 
 // ANSI: move the cursor to a row (1-based)
 std::string at(int row) { return "\033[" + std::to_string(row) + ";1H"; }
@@ -63,15 +64,11 @@ void Console::updateLayout() {
     outputRow = marquee->height() + 1;
 }
 
-// If the window was resized, clear and redraw so the prompt stays at the bottom.
+// Apply a resize only between input lines, when no partially typed text can be lost.
 void Console::checkResize() {
     Size size = queryTerminalSize();
     if (size.rows == realRows && size.cols == realCols) return;
     updateLayout();
-    std::cout << "\033[2J\033[H";
-    if (!marquee->isActive()) printWelcome();
-    moveToPrompt();
-    std::cout << "Command> " << std::flush;
 }
 
 // Put the cursor on the (cleared) prompt row at the bottom.
@@ -126,9 +123,11 @@ void Console::run() {
     
     std::string line;
     while (true) {
+        checkResize();
         moveToPrompt();
         std::cout << "Command> ";
         if (!std::getline(std::cin, line)) break;
+        checkResize();
         moveToOutput();
         if (!handleCommand(line)) break;
     }
@@ -147,17 +146,22 @@ void Console::animationLoop() {
             observedRevision = animationRevision;
         }
 
-        checkResize();
-        if (marquee->isActive()) {
+        // Draw only when the marquee fits, without touching the active prompt.
+        const Size size = queryTerminalSize();
+        const bool frameFits = size.rows >= marquee->height() + 2 &&
+                               size.cols > marquee->width();
+        if (frameFits && marquee->isActive()) {
             marquee->update();
             marquee->render();
         }
         
         // Wake early when start or speed changes, even if the old interval is long.
         std::unique_lock<std::mutex> lock(animationWaitMutex);
+        const int waitMs = frameFits ? refreshMs.load()
+                                     : std::min(refreshMs.load(), RESIZE_POLL_MS);
         animationWake.wait_for(
             lock,
-            std::chrono::milliseconds(refreshMs.load()),
+            std::chrono::milliseconds(waitMs),
             [this, observedRevision] {
                 return !running.load() || animationRevision != observedRevision;
             }

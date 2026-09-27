@@ -37,6 +37,7 @@ public:
     void render() const;
     bool isActive() const { std::lock_guard<std::mutex> lock(mtx); return isRunning; }
     int height() const { return SCREEN_HEIGHT; }
+    int width() const { return SCREEN_WIDTH; }
     
 private:
     void generateObstacles();
