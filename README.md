@@ -23,4 +23,14 @@ cmake --build build
 .\marquee.exe
 ```
 
+## Running from an IDE
+
+### Visual Studio Code (CMake Tools extension)
+1. Open the project folder in VS Code.
+2. Install the "CMake Tools" and "C/C++" extensions if you don't have them.
+3. When prompted, select a kit (e.g., MinGW GCC or your installed compiler).
+4. Open the Command Palette (Ctrl+Shift+P) → "CMake: Configure".
+5. Click "Build" in the CMake Tools status bar, or run "CMake: Build" from the Command Palette.
+6. Click "Run" (play icon) in the status bar, or open a terminal and run `.\marquee.exe` (Windows) / `./marquee` (Linux/macOS) from the project root.
+
 For contributing: Please make sure to add any additional `.cpp` files to `add_executables` in `CMakeLists.txt`. The build command stays the same regardless.
