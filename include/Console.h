@@ -36,7 +36,7 @@ private:
     std::uint64_t animationRevision{0};
 
     std::atomic<int> realRows{30}, realCols{120};   // actual terminal size
-    std::atomic<int> termRows{30};                  // rows used for the layout
-    std::atomic<int> promptRow{29};
-    std::atomic<int> outputRow{25};                 // first row of the output area
+    std::atomic<int> termRows{33};                  // rows used for the layout
+    std::atomic<int> promptRow{32};
+    std::atomic<int> outputRow{26};                 // first row of the output area
 };

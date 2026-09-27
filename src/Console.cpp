@@ -1,6 +1,7 @@
 #include "Console.h"
 #include <algorithm>
 #include <charconv>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <thread>
@@ -19,8 +20,8 @@
 #endif
 
 namespace {
-// marquee (24 rows) + 6 output rows + 1 prompt row + 1 spare row
-constexpr int MIN_ROWS = 32;
+// marquee (24 rows) + 1 blank row + 6 output rows + 1 prompt row + 1 spare row
+constexpr int MIN_ROWS = 33;
 constexpr int RESIZE_POLL_MS = 100;
 
 // ANSI: move the cursor to a row (1-based)
@@ -61,7 +62,7 @@ void Console::updateLayout() {
     realCols = size.cols;
     termRows = std::max(size.rows, MIN_ROWS);
     promptRow = termRows - 1;              // last row stays free so pressing Enter never scrolls
-    outputRow = marquee->height() + 1;
+    outputRow = marquee->height() + 2;
 }
 
 // Apply a resize only between input lines, when no partially typed text can be lost.
@@ -104,12 +105,15 @@ void Console::printWelcome() const {
 }
 
 void Console::printHelp() const {
-    std::cout << "help          Show commands\n"
-              << "start_marquee Start animation\n"
-              << "stop_marquee  Stop animation\n"
-              << "set_text <text>      Set marquee text\n"
-              << "set_speed <ms>       Set refresh (ms)\n"
-              << "exit          Terminate console\n";
+    const auto printCommand = [](const char* command, const char* description) {
+        std::cout << std::left << std::setw(18) << command << description << '\n';
+    };
+    printCommand("help", "Show commands");
+    printCommand("start_marquee", "Start animation");
+    printCommand("stop_marquee", "Stop animation");
+    printCommand("set_text <text>", "Set marquee text");
+    printCommand("set_speed <ms>", "Set refresh (ms)");
+    printCommand("exit", "Terminate console");
 }
 
 void Console::run() {
